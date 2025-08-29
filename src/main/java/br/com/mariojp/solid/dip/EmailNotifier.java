@@ -1,12 +1,24 @@
 package br.com.mariojp.solid.dip;
 
 public class EmailNotifier {
-	private final SmtpClient smtp = new SmtpClient();
+	private final MailSender mailSender;
+
+	public EmailNotifier() {
+		this.mailSender = createMailSender();
+	}
+
+	public EmailNotifier(MailSender mailSender) {
+		this.mailSender = mailSender;
+	}
+
+	private MailSender createMailSender() {
+		if ("true".equalsIgnoreCase(System.getProperty("DRY_RUN"))) {
+			return new NoopMailSender();
+		}
+		return new SmtpMailSender(new SmtpClient());
+	}
 
 	public void welcome(User user) {
-		if ("true".equalsIgnoreCase(System.getProperty("DRY_RUN"))) {
-			// Estado inicial: ainda assim usa SMTP real (bug proposital)
-		}
-		smtp.send(user.email(), "Bem-vindo", "Olá " + user.name());
+		mailSender.send(user.email(), "Bem-vindo", "Olá " + user.name());
 	}
 }
